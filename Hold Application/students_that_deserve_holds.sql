@@ -1,19 +1,24 @@
-select person_info.f_get_id(scratch.pidm), scratch.pidm, 
-       rolled.hours rolled, inprog.hours inprog,
-       rolled.hours + inprog.hours total
+-- pidms with unattended seminars
+with unattended_seminars as
+     ( select distinct sorappt_pidm pidm
+         from sorappt
+        where sorappt_recr_code in ('001','002','003','004')
+          and sorappt_rslt_code is null ) 
+          
+select unattended_seminars.pidm
   
-  from scratch,
+  from unattended_seminars,
   
        -- credit hours rolled to academic history
        (  select shrtckg_pidm pidm, sum(shrtckg.shrtckg_credit_hours) hours
-            from shrtckg, shrtckl,
+            from shrtckg, shrtckl, unattended_seminars,
                  (  select shrtckg_pidm pidm, shrtckg_term_code term, 
                            shrtckg_tckn_seq_no tckn_seq, max(shrtckg_seq_no) seq
-                      from shrtckg
-                     where shrtckg_pidm in (select pidm from scratch)
+                      from shrtckg, unattended_seminars
+                     where shrtckg_pidm = unattended_seminars.pidm
                      group by shrtckg_pidm, shrtckg_term_code, shrtckg_tckn_seq_no
                  ) max_tckg
-           where shrtckg_pidm in ( select pidm from scratch )
+           where shrtckg_pidm = unattended_seminars.pidm
              and shrtckg_pidm = max_tckg.pidm
              and shrtckg_term_code = max_tckg.term
              and shrtckg_tckn_seq_no = max_tckg.tckn_seq
@@ -28,9 +33,8 @@ select person_info.f_get_id(scratch.pidm), scratch.pidm,
          
        -- credit hrs in progress
        ( select sfrstcr_pidm pidm, sum(sfrstcr_credit_hr) hours
-           from sfrstcr
-          where sfrstcr_pidm in ( select pidm from scratch )
-          
+           from sfrstcr, unattended_seminars
+          where sfrstcr_pidm = unattended_seminars.pidm
             and sfrstcr.sfrstcr_levl_code = 'UG'
             and sfrstcr_grde_date is null
             and sfrstcr.sfrstcr_rsts_code in ( select stvrsts_code
@@ -43,5 +47,7 @@ select person_info.f_get_id(scratch.pidm), scratch.pidm,
           group by sfrstcr_pidm
        ) inprog
         
- where rolled.pidm = scratch.pidm
+ where rolled.pidm = unattended_seminars.pidm
    and inprog.pidm = rolled.pidm
+   
+   and rolled.hours + inprog.hours >= 24
