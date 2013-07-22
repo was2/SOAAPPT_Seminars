@@ -64,15 +64,15 @@ BEGIN
   
   
   FOR student in c_students LOOP
+
     DECLARE
       l_notice_text varchar2(4000);
       l_seminar_descs varchar2(4000);
       cursor c_seminar_descs (p_pidm varchar2) is
-        select stvrecr_desc from stvrecr, sorappt
-         where sorappt_pidm = p_pidm
-           and sorappt_recr_code in ('001','002','003','004')
-           and sorappt_rslt_code is null
-           and stvrecr_code = sorappt_recr_code;
+      select stvrecr_desc from stvrecr, sorappt
+       where sorappt_pidm = p_pidm
+         and sorappt_recr_code in ('001','002','003','004')          and sorappt_rslt_code is null
+         and stvrecr_code = sorappt_recr_code;
     BEGIN
       FOR descrip in c_seminar_descs(student.pidm) LOOP
         l_seminar_descs := l_seminar_descs || descrip.stvrecr_desc || utl_tcp.crlf;
