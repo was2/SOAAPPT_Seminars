@@ -1,4 +1,4 @@
-update MGCCOP.seminar_notices
+update MGCCOP.email_templates
 set text = 'Dear <<1>>,
 
 Pre-registration is approaching and we have noticed that you have not completed 
@@ -14,12 +14,13 @@ and locations and attend the following seminars prior the start of
 pre-registration to avoid a hold being placed on your account:
 
 <<2>>
-Thank you.'
+Thank you.',
+subject = 'Sutdent Success Seminars'
 
 where label = 'seminar_notice_1';
 
 
-update MGCCOP.seminar_notices
+update MGCCOP.email_templates
 set text = 'Dear <<1>>,
 
 Pre-registration is approaching and we have noticed that you have not completed 
@@ -38,11 +39,12 @@ pre-registration to avoid a hold being placed on your account:
 Keep in mind that seminar offerings at this point will be limited so please act 
 now. 
 
-Thank you.'
+Thank you.',
+subject = 'Sutdent Success Seminars'
 
 where label = 'seminar_notice_2';
 
-update MGCCOP.seminar_notices
+update MGCCOP.email_templates
 set text = 'Dear <<1>>,
 
 Pre-registration is approaching and we have noticed that you have not completed 
@@ -63,11 +65,12 @@ now.  Contact the Student Success Seminar Coordinator on your campus in writing
 if you have extenuating circumstances that need to be considered in order to 
 appeal the hold. 
 
-Thank you.'
+Thank you.',
+subject = 'Sutdent Success Seminars'
 
 where label = 'seminar_notice_3';
 
-update MGCCOP.seminar_notices
+update MGCCOP.email_templates
 set text = 'Dear <<1>>,
 
 A registration hold has been placed on your account.  This hold will be lifted
@@ -84,6 +87,7 @@ Student Success Seminar Coordinator on your campus in writing if you have
 extenuating circumstances that need to be considered in order to appeal the
 hold.  
 
-Thank you.'
+Thank you.',
+subject = 'Registration HOLD!'
 
 where label = 'seminar_notice_4';

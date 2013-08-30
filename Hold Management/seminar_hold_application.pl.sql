@@ -1,26 +1,28 @@
 DECLARE
 
 CURSOR c_students IS
--- pidms with unattended seminars
-with unattended_seminars as
+-- noncompliant_students are students who have not yet attended all the seminars;
+-- using a 'with' clause because the subquery is used multiple times
+with noncompliant_students as 
      ( select distinct sorappt_pidm pidm
          from sorappt
         where sorappt_recr_code in ('001','002','003','004')
           and sorappt_rslt_code is null )
      
-select unattended_seminars.pidm pidm
+select noncompliant_students.pidm pidm
   
-  from unattended_seminars,
-       -- credit hours rolled to academic history
+  from noncompliant_students,
+      
+       -- inline view: credit hours rolled to academic history
        (  select shrtckg_pidm pidm, sum(shrtckg.shrtckg_credit_hours) hours
-            from shrtckg, shrtckl, unattended_seminars,
+            from shrtckg, shrtckl, noncompliant_students,
                  (  select shrtckg_pidm pidm, shrtckg_term_code term, 
                            shrtckg_tckn_seq_no tckn_seq, max(shrtckg_seq_no) seq
-                      from shrtckg, unattended_seminars
-                     where shrtckg_pidm = unattended_seminars.pidm
+                      from shrtckg, noncompliant_students
+                     where shrtckg_pidm = noncompliant_students.pidm
                      group by shrtckg_pidm, shrtckg_term_code, shrtckg_tckn_seq_no
                  ) max_tckg
-           where shrtckg_pidm = unattended_seminars.pidm
+           where shrtckg_pidm = noncompliant_students.pidm
              and shrtckg_pidm = max_tckg.pidm
              and shrtckg_term_code = max_tckg.term
              and shrtckg_tckn_seq_no = max_tckg.tckn_seq
@@ -32,11 +34,11 @@ select unattended_seminars.pidm pidm
              and shrtckl.shrtckl_levl_code = 'UG'
            group by shrtckg_pidm
        ) rolled,
-
-       -- credit hrs in progress
+         
+       -- inline view: credit hrs in progress
        ( select sfrstcr_pidm pidm, sum(sfrstcr_credit_hr) hours
-           from sfrstcr, unattended_seminars
-          where sfrstcr_pidm = unattended_seminars.pidm
+           from sfrstcr, noncompliant_students
+          where sfrstcr_pidm = noncompliant_students.pidm
             and sfrstcr.sfrstcr_levl_code = 'UG'
             and sfrstcr_grde_date is null
             and sfrstcr.sfrstcr_rsts_code in ( select stvrsts_code
@@ -49,9 +51,9 @@ select unattended_seminars.pidm pidm
           group by sfrstcr_pidm
        ) inprog
 
- where rolled.pidm = unattended_seminars.pidm
-   and inprog.pidm = unattended_seminars.pidm
-   and rolled.hours + inprog.hours >= 24;
+ where rolled.pidm (+) = noncompliant_students.pidm
+   and inprog.pidm (+) = noncompliant_students.pidm
+   and nvl(rolled.hours, 0) + nvl(inprog.hours, 0) >= 24;
 
    l_seminar_hold_code CONSTANT varchar2(2) := '99';
 

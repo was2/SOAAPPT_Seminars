@@ -1,12 +1,18 @@
 set sqlblanklines on;
 
-insert into sorappt ( 
+/* 
+  Creates the appointment records to be inserted into SORAPPT
+  that represent the 4 required seminars for new first-time freshmen;
+  much of the logic catches small cases due to unreliable data entry.
+*/
 
+insert into sorappt ( 
+  
   select students.pidm, '31-DEC-209'||substr(codes.meeting_code, -1,1), 
            1230, 1700, null, codes.meeting_code, null, null, null, sysdate
     from (  select sgbstdn_pidm pidm
               from sgbstdn,
-              -- get latest record for all students by 
+              -- get latest learner record for all students by 
               -- joining to sgbstdn on max effective term code
               ( select sgbstdn_pidm pidm, max( sgbstdn_term_code_eff ) term
                   from sgbstdn 
