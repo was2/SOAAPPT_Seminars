@@ -41,7 +41,11 @@ insert into sorappt (
                     )
                 -- and have no transfer credits
                 and not exists (select 'any' from shrtrce
-                                 where shrtrce_pidm = sgbstdn_pidm )
+                                 where shrtrce_pidm = sgbstdn_pidm
+                                   and 'AP' <> (select shrtrit_sbgi_code
+                                                  from shrtrit
+                                                 where shrtrit_pidm = shrtrce_pidm
+                                                   and shrtrit_seq_no = shrtrce_trit_seq_no) )
                 
                 -- are currently freshmen according to the banner api
                 and 'FR' = SGKCLAS.F_CLASS_CODE(sgbstdn_pidm,'UG','999999')    
