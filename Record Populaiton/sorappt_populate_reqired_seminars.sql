@@ -39,6 +39,18 @@ insert into sorappt (
                                               where inners.sgbstdn_styp_code = 'D' ) 
                          )
                     )
+                    
+                --filter out case where student has multiple new first-time recs.
+                --but has no dual-enrolled history. 
+                and sgbstdn_pidm not in (select distinct sgbstdn_pidm
+                                           from sgbstdn o
+                                          where not exists (select 'D' from sgbstdn i 
+                                                             where i.sgbstdn_pidm=o.sgbstdn_pidm 
+                                                               and i.sgbstdn_styp_code='D')
+                                            and 1 < (select count(sgbstdn_pidm) from sgbstdn i 
+                                                      where i.sgbstdn_pidm=sgbstdn.sgbstdn_pidm 
+                                                        and i.sgbstdn_styp_code='N'))
+                                                        
                 -- and have no transfer credits
                 and not exists (select 'any' from shrtrce
                                  where shrtrce_pidm = sgbstdn_pidm
