@@ -1,7 +1,17 @@
+create or replace 
+TRIGGER MGCCOP.REMOVE_SUCCESS_SEMINAR_HOLDS 
+AFTER UPDATE OF SORAPPT_RSLT_CODE ON SATURN.SORAPPT 
+
+/*
+  Drew Sawyer 9/2013
+  Trigger to remove success seminar attendance holds (code 99) for students
+  when all 4 seminars are attended
+*/
+
 DECLARE
 
 CURSOR c_invalid_holds IS
--- rowids of seminar holds who now have attended all seminars
+-- rowids of seminar holds for students who now have attended all seminars
 select rowid
   from sprhold  
  where sprhold_hldd_code = '99'
@@ -28,6 +38,7 @@ select rowid
    
 BEGIN
 
+--removes each invalid hold
   for hold in c_invalid_holds loop
     gb_hold.p_delete( p_rowid => rowidtochar(hold.rowid) );
   end loop;
